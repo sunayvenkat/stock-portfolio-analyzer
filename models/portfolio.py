@@ -1,15 +1,22 @@
 
 
 class portfolio:
-    def __init__(self, name, assets):
+    def __init__(self, name):
         self.name = name
-        self.assets = assets
+        self.positions = {}
 
-    def total_value(self):
-        return sum(asset.value for asset in self.assets)
+    def add_position(self, ticker, shares, purchase_price):
+        ticker = ticker.upper()
+        if ticker in self.positions:
+            self.positions[ticker]['shares'] += shares
+            self.positions[ticker]['purchase_price'] = purchase_price
+        else:
+            self.positions[ticker] = {'shares': shares, 'purchase_price': purchase_price}
 
-    def add_asset(self, asset):
-        self.assets.append(asset)
-
-    def remove_asset(self, asset):
-        self.assets.remove(asset)
+    def remove_position(self, ticker):
+        ticker = ticker.upper()
+        if ticker in self.positions:
+            del self.positions[ticker]
+        else:
+            print("Position for " + ticker + " does not exist in the portfolio.")
+    
