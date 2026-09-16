@@ -7,11 +7,10 @@ class Portfolio:
 
     
     def add_position(self, ticker, shares, purchase_price):
-        ticker = ticker.upper()
 
         #Validates that the ticker is a string
         if not isinstance(ticker, str):
-            raise ValueError("Ticker symbol must be a string.")
+            raise TypeError("Ticker symbol must be a string.")
 
         ticker = ticker.upper().strip()
 
@@ -20,14 +19,14 @@ class Portfolio:
 
         #Validates that shares is a number bigger than 0
         if not isinstance(shares, (int, float)):
-            raise ValueError("Number of shares must be a number.")
+            raise TypeError("Number of shares must be a number.")
         
         if shares <= 0:
             raise ValueError("Number of shares must be greater than zero.")
 
         #Validates that purchase price is a number bigger than 0
         if not isinstance(purchase_price, (int, float)):
-            raise ValueError("Purchase price must be a number.")
+            raise TypeError("Purchase price must be a number.")
 
         if purchase_price <= 0:
             raise ValueError("Purchase price must be greater than zero.")
