@@ -49,60 +49,52 @@ st.title("Stock Portfolio Analyzer")
 st.sidebar.header("Portfolio Input")
 
 #Takes in input for the stock ticker, number of shares, and purchase price
-ticker = st.sidebar.text_input(
-    "Ticker",
-    value="AAPL"
+default_holdings = pd.DataFrame({
+    "Ticker": ["AAPL", "MSFT", "NVDA"],
+    "Shares": [10.0, 5.0, 8.0],
+    "Purchase Price": [230.0, 400.0, 180.0],
+})
+
+edited_holdings = st.sidebar.data_editor(
+    default_holdings,
+    num_rows="dynamic",
+    use_container_width=True,
 )
 
-shares = st.sidebar.number_input(
-    "Shares",
-    min_value=0.01,
-    value=10.0,
-    step=1.0
-)
-
-purchase_price = st.sidebar.number_input(
-    "Purchase Price",
-    min_value=0.01,
-    value=230.0,
-    step=1.0
-)
-
-analyze_button = st.sidebar.button(
-    "Analyze Portfolio"
-)
+analyze_button = st.sidebar.button("Analyze Portfolio")
 
 if analyze_button:
     try:
         portfolio = Portfolio("Dashboard Portfolio")
 
-        portfolio.add_position(
-            ticker,
-            shares,
-            purchase_price
-        )
+        for _, row in edited_holdings.iterrows():
+            ticker = str(row["Ticker"]).strip()
+
+            if not ticker:
+                continue
+
+            portfolio.add_position(
+                ticker,
+                float(row["Shares"]),
+                float(row["Purchase Price"])
+            )
+
+        if not portfolio.positions:
+            raise ValueError(
+                "Please enter at least one valid holding."
+            )
 
         values = get_portfolio_values(portfolio)
 
-        values = calculate_position_weights(
-            values
-        )
+        values = calculate_position_weights(values)
 
-        total_cost = calculate_total_cost_basis(
-            values
-        )
+        total_cost = calculate_total_cost_basis(values)
 
-        total_value = calculate_portfolio_value(
-            values
-        )
+        total_value = calculate_portfolio_value(values)
 
-        total_gain = calculate_portfolio_gain_loss(
-            values
-        )
+        total_gain = calculate_portfolio_gain_loss(values)
 
-        total_return = calculate_portfolio_return(
-            values
-        )
+        total_return = calculate_portfolio_return(values)
 
         #Displays summary metrics
         col1, col2, col3, col4 = st.columns(4)
@@ -142,9 +134,7 @@ if analyze_button:
                 "Weight %": data["weight"],
             })
 
-        holdings_df = pd.DataFrame(
-            holdings_data
-        )
+        holdings_df = pd.DataFrame(holdings_data)
 
         st.subheader("Portfolio Holdings")
 
@@ -153,34 +143,20 @@ if analyze_button:
             use_container_width=True
         )
 
-        tickers = list(
-            portfolio.positions.keys()
-        )
+        tickers = list(portfolio.positions.keys())
 
-        historical_prices = (
-            get_multiple_closing_prices(
-                tickers,
-                period="1y"
-            )
-        )
+        historical_prices = (get_multiple_closing_prices(tickers,period="1y"))
 
-        stock_returns = calculate_daily_returns(
-            historical_prices
-        )
+        stock_returns = calculate_daily_returns(historical_prices)
 
         weights = {
             ticker: data["weight"] / 100
             for ticker, data in values.items()
         }
 
-        portfolio_returns = calculate_portfolio_returns(
-            stock_returns,
-            weights
-        )
+        portfolio_returns = calculate_portfolio_returns(stock_returns,weights)
 
-        performance = analyze_portfolio_returns(
-            portfolio_returns
-        )
+        performance = analyze_portfolio_returns(portfolio_returns)
 
         st.subheader(
             "Historical Performance"
@@ -208,9 +184,7 @@ if analyze_button:
             f"{performance['max_drawdown']:.2%}"
         )
 
-        portfolio_growth = (
-            1 + portfolio_returns
-        ).cumprod()
+        portfolio_growth = (1 + portfolio_returns).cumprod()
 
         st.subheader(
             "Portfolio Growth"
@@ -222,25 +196,15 @@ if analyze_button:
 
         all_tickers = tickers + ["SPY"]
 
-        all_prices = get_multiple_closing_prices(
-            all_tickers,
-            period="1y"
-        )
+        all_prices = get_multiple_closing_prices(all_tickers,period="1y")
 
         benchmark_prices = all_prices["SPY"]
 
-        historical_prices = all_prices.drop(
-            columns=["SPY"]
-        )
+        historical_prices = all_prices.drop(columns=["SPY"])
 
-        benchmark_metrics = analyze_performance(
-            benchmark_prices
-        )
+        benchmark_metrics = analyze_performance(benchmark_prices)
 
-        comparison = compare_performance(
-            performance,
-            benchmark_metrics
-        )
+        comparison = compare_performance(performance,benchmark_metrics)
 
         st.subheader(
             "Portfolio vs S&P 500"
@@ -264,12 +228,7 @@ if analyze_button:
         )
 
         if len(portfolio.positions) >= 2:
-            diversification = (
-                analyze_diversification(
-                    values,
-                    stock_returns
-                )
-            )
+            diversification = (analyze_diversification(values, stock_returns))
 
             # display diversification
         else:
@@ -278,10 +237,7 @@ if analyze_button:
                 "to view diversification metrics."
             )
 
-        diversification = analyze_diversification(
-            values,
-            stock_returns
-        )
+        diversification = analyze_diversification(values, stock_returns)
 
         st.subheader(
             "Diversification"
