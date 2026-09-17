@@ -22,10 +22,7 @@ def calculate_portfolio_volatility(weights,covariance_matrix):
 
     return np.sqrt(variance)
 
-def find_minimum_volatility_portfolio(
-    expected_returns,
-    covariance_matrix
-):
+def find_minimum_volatility_portfolio(expected_returns, covariance_matrix):
     num_assets = len(expected_returns)
 
     initial_weights = np.array(

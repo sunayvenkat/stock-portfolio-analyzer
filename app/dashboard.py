@@ -1,8 +1,18 @@
 
 
 import streamlit as st
+from analytics.monte_carlo import estimate_portfolio_parameters
 from models.portfolio import Portfolio
 import pandas as pd
+
+from analytics.monte_carlo import (
+    estimate_portfolio_parameters,
+    run_monte_carlo,
+    estimate_portfolio_parameters,
+    summarize_simulation,
+    calculate_probability_of_loss,
+    calculate_simulated_var,
+)
 
 from analytics.optimization import (
     optimize_portfolio,
@@ -110,6 +120,55 @@ if st.session_state.analyzed:
 
         total_return = calculate_portfolio_return(values)
 
+        tickers = list(portfolio.positions.keys())
+        
+        historical_prices = (get_multiple_closing_prices(tickers,period="1y"))
+
+        stock_returns = calculate_daily_returns(historical_prices)
+
+        weights = {
+            ticker: data["weight"] / 100
+            for ticker, data in values.items()
+        }
+
+        portfolio_returns = calculate_portfolio_returns(stock_returns,weights)
+
+        #Monte Carlo Simulation
+        expected_return, volatility = (estimate_portfolio_parameters(portfolio_returns))
+        initial_value = total_value
+
+        simulation_results = run_monte_carlo(
+            expected_return=expected_return,
+            volatility=volatility,
+            simulations=1000,
+            days=252,
+            initial_value=initial_value
+        )
+
+        simulation_summary = summarize_simulation(
+            simulation_results
+        )
+
+        probability_of_loss = (
+            calculate_probability_of_loss(
+                simulation_results,
+                initial_value
+            )
+        )
+
+
+        simulated_var = calculate_simulated_var(
+            simulation_results,
+            initial_value
+        )
+        
+
+        performance = analyze_portfolio_returns(portfolio_returns)
+
+        #Optimization 
+        optimization = optimize_portfolio(stock_returns)
+        
+
         #Displays summary metrics
         col1, col2, col3, col4 = st.columns(4)
 
@@ -148,6 +207,95 @@ if st.session_state.analyzed:
                 "Weight %": data["weight"],
             })
 
+        all_tickers = tickers + ["SPY"]
+        
+        all_prices = get_multiple_closing_prices(all_tickers,period="1y")
+
+        benchmark_prices = all_prices["SPY"]
+
+        historical_prices = all_prices.drop(columns=["SPY"])
+
+        benchmark_metrics = analyze_performance(benchmark_prices)
+
+        comparison = compare_performance(performance,benchmark_metrics)
+
+        #Creates portfolio line chart
+        portfolio_growth = (1 + portfolio_returns).cumprod()
+        
+        st.subheader("Portfolio Growth")
+
+        st.line_chart(portfolio_growth)
+
+        #Compares against S&P 500
+        st.subheader(
+            "Portfolio vs S&P 500"
+        )
+
+        b1, b2, b3 = st.columns(3)
+
+        b1.metric(
+            "Portfolio Return",
+            f"{comparison['portfolio_return']:.2%}"
+        )
+
+        b2.metric(
+            "SPY Return",
+            f"{comparison['benchmark_return']:.2%}"
+        )
+
+        b3.metric(
+            "Excess Return",
+            f"{comparison['excess_return']:.2%}"
+        )
+
+        if len(portfolio.positions) >= 2:
+            diversification = (analyze_diversification(values, stock_returns))
+
+            # display diversification
+        else:
+            st.info(
+                "Add at least two holdings "
+                "to view diversification metrics."
+            )
+
+        diversification = analyze_diversification(values, stock_returns)
+
+        st.subheader(
+            "Diversification"
+        )
+
+        d1, d2, d3, d4 = st.columns(4)
+
+        d1.metric(
+            "Holdings",
+            diversification["number_of_holdings"]
+        )
+
+        d2.metric(
+            "Largest Position",
+            diversification["largest_position"]["ticker"]
+        )
+
+        d3.metric(
+            "Effective Holdings",
+            f"{diversification['effective_holdings']:.2f}"
+        )
+
+        d4.metric(
+            "Average Correlation",
+            f"{diversification['average_correlation']:.2f}"
+        )
+
+        st.write(
+            "Correlation Matrix"
+        )
+
+        st.dataframe(
+            diversification[
+                "correlation_matrix"
+            ]
+        )
+
         holdings_df = pd.DataFrame(holdings_data)
 
         st.subheader("Portfolio Holdings")
@@ -157,24 +305,7 @@ if st.session_state.analyzed:
             use_container_width=True
         )
 
-        tickers = list(portfolio.positions.keys())
-
-        historical_prices = (get_multiple_closing_prices(tickers,period="1y"))
-
-        stock_returns = calculate_daily_returns(historical_prices)
-
-        weights = {
-            ticker: data["weight"] / 100
-            for ticker, data in values.items()
-        }
-
-        portfolio_returns = calculate_portfolio_returns(stock_returns,weights)
-
-        performance = analyze_portfolio_returns(portfolio_returns)
-
-        #Optimization 
-        optimization = optimize_portfolio(stock_returns)
-
+        
         st.subheader(
             "Historical Performance"
         )
@@ -319,6 +450,34 @@ if st.session_state.analyzed:
 
         st.bar_chart(chart_data)
 
+
+        #Monte Carlo parameters
+        simulation_count = st.slider(
+            "Number of Simulations",
+            min_value=100,
+            max_value=10000,
+            value=1000,
+            step=100
+        )
+
+        simulation_years = st.slider(
+            "Simulation Horizon (Years)",
+            min_value=1,
+            max_value=10,
+            value=1
+        )
+
+        simulation_days = (
+            simulation_years * 252
+        )
+
+        simulation_results = run_monte_carlo(
+            expected_return=expected_return,
+            volatility=volatility,
+            simulations=simulation_count,
+            days=simulation_days,
+            initial_value=initial_value
+        )
         
         with st.expander("Stock-Level Analysis", expanded=True):
             #Analysis of a chosen stock in portfolio
@@ -439,96 +598,71 @@ if st.session_state.analyzed:
                 selected_returns
             )
 
-        portfolio_growth = (1 + portfolio_returns).cumprod()
-
-        st.subheader(
-            "Portfolio Growth"
-        )
-
-        st.line_chart(
-            portfolio_growth
-        )
-
-        all_tickers = tickers + ["SPY"]
-
-        all_prices = get_multiple_closing_prices(all_tickers,period="1y")
-
-        benchmark_prices = all_prices["SPY"]
-
-        historical_prices = all_prices.drop(columns=["SPY"])
-
-        benchmark_metrics = analyze_performance(benchmark_prices)
-
-        comparison = compare_performance(performance,benchmark_metrics)
-
-        st.subheader(
-            "Portfolio vs S&P 500"
-        )
-
-        b1, b2, b3 = st.columns(3)
-
-        b1.metric(
-            "Portfolio Return",
-            f"{comparison['portfolio_return']:.2%}"
-        )
-
-        b2.metric(
-            "SPY Return",
-            f"{comparison['benchmark_return']:.2%}"
-        )
-
-        b3.metric(
-            "Excess Return",
-            f"{comparison['excess_return']:.2%}"
-        )
-
-        if len(portfolio.positions) >= 2:
-            diversification = (analyze_diversification(values, stock_returns))
-
-            # display diversification
-        else:
-            st.info(
-                "Add at least two holdings "
-                "to view diversification metrics."
+            #Display Monte Carlo stuff
+            st.subheader(
+                "Monte Carlo Simulation"
             )
 
-        diversification = analyze_diversification(values, stock_returns)
+            m1, m2, m3, m4 = st.columns(4)
 
-        st.subheader(
-            "Diversification"
-        )
+            m1.metric(
+                "Current Value",
+                f"${initial_value:,.2f}"
+            )
 
-        d1, d2, d3, d4 = st.columns(4)
+            m2.metric(
+                "Median Simulated Value",
+                f"${simulation_summary['median']:,.2f}"
+            )
 
-        d1.metric(
-            "Holdings",
-            diversification["number_of_holdings"]
-        )
+            m3.metric(
+                "Probability of Loss",
+                f"{probability_of_loss:.2%}"
+            )
 
-        d2.metric(
-            "Largest Position",
-            diversification["largest_position"]["ticker"]
-        )
+            m4.metric(
+                "95% VaR",
+                f"${simulated_var:,.2f}"
+            )
 
-        d3.metric(
-            "Effective Holdings",
-            f"{diversification['effective_holdings']:.2f}"
-        )
+            m5, m6 = st.columns(2)
 
-        d4.metric(
-            "Average Correlation",
-            f"{diversification['average_correlation']:.2f}"
-        )
+            m5.metric(
+                "5th Percentile",
+                f"${simulation_summary['percentile_5']:,.2f}"
+            )
 
-        st.write(
-            "Correlation Matrix"
-        )
+            m6.metric(
+                "95th Percentile",
+                f"${simulation_summary['percentile_95']:,.2f}"
+            )
 
-        st.dataframe(
-            diversification[
-                "correlation_matrix"
-            ]
-        )
+            st.write(
+                "### Sample Future Portfolio Paths"
+            )
+
+            st.line_chart(
+                simulation_results.iloc[:, :50]
+            )
+
+            ending_values = (
+                simulation_results.iloc[-1]
+            )
+
+            st.write(
+                "### Distribution of Ending Values"
+            )
+
+            st.bar_chart(
+                ending_values.value_counts(
+                    bins=30
+                ).sort_index()
+            )
+
+
+
+
+        
     except Exception as error:
         st.error(
             f"Unable to analyze portfolio: {error}"
