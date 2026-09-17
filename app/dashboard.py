@@ -4,6 +4,11 @@ import streamlit as st
 from models.portfolio import Portfolio
 import pandas as pd
 
+from analytics.attribution import (
+    calculate_stock_cumulative_returns,
+    build_attribution_table,
+)
+
 from analytics.valuation import (
     get_portfolio_values,
     calculate_position_weights,
@@ -87,9 +92,7 @@ if st.session_state.analyzed:
             )
 
         if not portfolio.positions:
-            raise ValueError(
-                "Please enter at least one valid holding."
-            )
+            raise ValueError("Please enter at least one valid holding.")
 
         values = get_portfolio_values(portfolio)
 
@@ -191,6 +194,53 @@ if st.session_state.analyzed:
             f"{performance['max_drawdown']:.2%}"
         )
 
+        #Cumulative returns
+        stock_cumulative_returns = (
+            calculate_stock_cumulative_returns(
+                historical_prices
+            )
+        )
+
+        attribution = build_attribution_table(
+            values,
+            stock_cumulative_returns
+        )
+
+        attribution_df = pd.DataFrame(attribution)
+
+        st.subheader("Performance Attribution")
+
+        display_df = attribution_df.copy()
+
+        display_df["Weight"] = (
+            display_df["Weight"]
+            .map(lambda x: f"{x:.2f}%")
+        )
+
+        display_df["Stock Return"] = (
+            display_df["Stock Return"]
+            .map(lambda x: f"{x:.2%}")
+        )
+
+        display_df["Contribution"] = (
+            display_df["Contribution"]
+            .map(lambda x: f"{x:.2%}")
+        )
+
+        st.dataframe(
+            display_df,
+            use_container_width=True
+        )
+
+        #Contributions chart
+        chart_data = (
+            attribution_df
+            .set_index("Ticker")["Contribution"]
+        )
+
+        st.bar_chart(chart_data)
+
+        
         
 
         with st.expander("Stock-Level Analysis", expanded=True):
@@ -239,15 +289,10 @@ if st.session_state.analyzed:
                 f"{selected_ticker} Price History"
             )
     
-            st.line_chart(
-                selected_prices
-            )
+            st.line_chart(selected_prices)
     
             #Normalize series
-            normalized_prices = (
-                selected_prices
-                / selected_prices.iloc[0]
-            )
+            normalized_prices = (selected_prices / selected_prices.iloc[0])
     
             st.subheader(
                 f"{selected_ticker} Growth of $1"
@@ -257,9 +302,7 @@ if st.session_state.analyzed:
                 normalized_prices
             )
     
-            stock_drawdown = calculate_drawdown(
-                selected_prices
-            )
+            stock_drawdown = calculate_drawdown(selected_prices)
     
             st.subheader(
                 f"{selected_ticker} Drawdown"
