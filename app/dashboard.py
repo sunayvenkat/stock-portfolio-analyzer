@@ -4,6 +4,10 @@ import streamlit as st
 from models.portfolio import Portfolio
 import pandas as pd
 
+from analytics.optimization import (
+    optimize_portfolio,
+)
+
 from analytics.attribution import (
     calculate_stock_cumulative_returns,
     build_attribution_table,
@@ -168,6 +172,9 @@ if st.session_state.analyzed:
 
         performance = analyze_portfolio_returns(portfolio_returns)
 
+        #Optimization 
+        optimization = optimize_portfolio(stock_returns)
+
         st.subheader(
             "Historical Performance"
         )
@@ -206,6 +213,78 @@ if st.session_state.analyzed:
             stock_cumulative_returns
         )
 
+        st.subheader(
+            "Portfolio Optimization"
+        )
+
+        st.write(
+            "### Minimum-Volatility Allocation"
+        )
+
+        min_vol_df = pd.DataFrame({
+            "Ticker": (
+                optimization[
+                    "minimum_volatility"
+                ].keys()
+            ),
+
+            "Weight": [
+                weight * 100
+                for weight
+                in optimization[
+                    "minimum_volatility"
+                ].values()
+            ]
+        })
+
+        st.dataframe(
+            min_vol_df,
+            use_container_width=True
+        )
+
+        st.write(
+            "### Maximum-Sharpe Allocation"
+        )
+
+        max_sharpe_df = pd.DataFrame({
+            "Ticker": (
+                optimization[
+                    "maximum_sharpe"
+                ].keys()
+            ),
+
+            "Weight": [
+                weight * 100
+                for weight
+                in optimization[
+                    "maximum_sharpe"
+                ].values()
+            ]
+        })
+
+        st.dataframe(
+            max_sharpe_df,
+            use_container_width=True
+        )
+
+        min_vol_chart = (
+            min_vol_df
+            .set_index("Ticker")["Weight"]
+        )
+
+        st.bar_chart(
+            min_vol_chart
+        )
+
+        max_sharpe_chart = (
+            max_sharpe_df
+            .set_index("Ticker")["Weight"]
+        )
+
+        st.bar_chart(
+            max_sharpe_chart
+        )
+
         attribution_df = pd.DataFrame(attribution)
 
         st.subheader("Performance Attribution")
@@ -241,8 +320,6 @@ if st.session_state.analyzed:
         st.bar_chart(chart_data)
 
         
-        
-
         with st.expander("Stock-Level Analysis", expanded=True):
             #Analysis of a chosen stock in portfolio
             st.subheader("Stock-Level Analysis")
