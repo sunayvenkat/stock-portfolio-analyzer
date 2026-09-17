@@ -19,6 +19,7 @@ from data.market_data import (
 
 from analytics.performance import (
     calculate_daily_returns,
+    calculate_drawdown,
     calculate_portfolio_returns,
     analyze_portfolio_returns,
 )
@@ -61,9 +62,15 @@ edited_holdings = st.sidebar.data_editor(
     use_container_width=True,
 )
 
+if "analyzed" not in st.session_state:
+    st.session_state.analyzed = False
+
 analyze_button = st.sidebar.button("Analyze Portfolio")
 
 if analyze_button:
+    st.session_state.analyzed = True
+
+if st.session_state.analyzed:
     try:
         portfolio = Portfolio("Dashboard Portfolio")
 
@@ -183,6 +190,134 @@ if analyze_button:
             "Max Drawdown",
             f"{performance['max_drawdown']:.2%}"
         )
+
+        
+
+        with st.expander("Stock-Level Analysis", expanded=True):
+            #Analysis of a chosen stock in portfolio
+            st.subheader("Stock-Level Analysis")
+    
+            selected_ticker = st.selectbox(
+                "Select a holding",
+                options=list(portfolio.positions.keys()),
+                key = "selected_stock"
+            )
+    
+            selected_prices = historical_prices[selected_ticker]
+    
+            stock_metrics = analyze_performance(selected_prices)
+    
+            s1, s2, s3, s4 = st.columns(4)
+    
+            s1.metric(
+                "Current Price",
+                f"${values[selected_ticker]['current_price']:.2f}"
+            )
+    
+            s2.metric(
+                "1Y Return",
+                f"{stock_metrics['cumulative_return']:.2%}"
+            )
+    
+            s3.metric(
+                "Volatility",
+                f"{stock_metrics['annualized_volatility']:.2%}"
+            )
+    
+            s4.metric(
+                "Max Drawdown",
+                f"{stock_metrics['max_drawdown']:.2%}"
+            )
+    
+            st.metric(
+                "Sharpe Ratio",
+                f"{stock_metrics['sharpe_ratio']:.2f}"
+            )
+    
+            #Charts of the historical price
+            st.subheader(
+                f"{selected_ticker} Price History"
+            )
+    
+            st.line_chart(
+                selected_prices
+            )
+    
+            #Normalize series
+            normalized_prices = (
+                selected_prices
+                / selected_prices.iloc[0]
+            )
+    
+            st.subheader(
+                f"{selected_ticker} Growth of $1"
+            )
+    
+            st.line_chart(
+                normalized_prices
+            )
+    
+            stock_drawdown = calculate_drawdown(
+                selected_prices
+            )
+    
+            st.subheader(
+                f"{selected_ticker} Drawdown"
+            )
+    
+            st.line_chart(
+                stock_drawdown
+            )
+    
+            position = values[selected_ticker]
+    
+            st.write("### Position Details")
+    
+            p1, p2, p3, p4 = st.columns(4)
+    
+            p1.metric(
+                "Shares",
+                f"{position['shares']}"
+            )
+    
+            p2.metric(
+                "Purchase Price",
+                f"${position['purchase_price']:.2f}"
+            )
+    
+            p3.metric(
+                "Position Value",
+                f"${position['current_value']:,.2f}"
+            )
+    
+            p4.metric(
+                "Portfolio Weight",
+                f"{position['weight']:.2f}%"
+            )
+    
+            p5, p6 = st.columns(2)
+    
+            p5.metric(
+                "Gain / Loss",
+                f"${position['gain_loss']:,.2f}"
+            )
+    
+            p6.metric(
+                "Return Since Purchase",
+                f"{position['return_percentage']:.2f}%"
+            )
+    
+            selected_returns = calculate_daily_returns(
+                selected_prices
+            )
+    
+            st.subheader(
+                f"{selected_ticker} Daily Returns"
+            )
+    
+            st.line_chart(
+                selected_returns
+            )
 
         portfolio_growth = (1 + portfolio_returns).cumprod()
 
