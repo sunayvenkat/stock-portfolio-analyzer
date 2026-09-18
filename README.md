@@ -1,7 +1,5 @@
 # stock-portfolio-analyzer
 
-I built a Python-based portfolio analytics platform that retrieves market data, calculates risk-adjusted performance metrics, analyzes asset correlations and sector concentration, performs Monte Carlo simulations, and uses constrained optimization to construct portfolios.
-
 Stock Portfolio Analyzer is an interactive Python application for evaluating investment portfolios using real-time and historical market data. Built with Streamlit, the platform combines portfolio valuation, performance analysis, risk metrics, diversification analysis, benchmark comparison, optimization, Monte Carlo simulation, and financial news sentiment into a single dashboard.
 
 Users can enter multiple stock holdings and instantly analyze portfolio value, gain/loss, asset weights, historical returns, volatility, Sharpe ratio, maximum drawdown, and correlation. The application also compares performance against the S&P 500, identifies individual stock contributions to portfolio returns, and generates minimum-volatility and maximum-Sharpe allocations using quantitative optimization techniques.
