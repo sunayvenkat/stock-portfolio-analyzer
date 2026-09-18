@@ -25,9 +25,7 @@ def simulate_portfolio_path(
         size=days
     )
 
-    growth = np.cumprod(
-        1 + simulated_returns
-    )
+    growth = np.cumprod(1 + simulated_returns)
 
     return initial_value * growth
 
@@ -42,9 +40,7 @@ def run_monte_carlo(
 ):
     rng = np.random.default_rng(random_state)
 
-    paths = np.zeros(
-        (days, simulations)
-    )
+    paths = np.zeros((days, simulations))
 
     daily_return = expected_return / TRADING_DAYS
     daily_volatility = volatility / np.sqrt(TRADING_DAYS)
@@ -56,29 +52,17 @@ def run_monte_carlo(
             size=days
         )
 
-        growth = np.cumprod(
-            1 + simulated_returns
-        )
+        growth = np.cumprod(1 + simulated_returns)
 
-        paths[:, simulation] = (
-            initial_value * growth
-        )
+        paths[:, simulation] = (initial_value * growth)
 
     return pd.DataFrame(paths)
 
 #Estimate portfolio parameters
-def estimate_portfolio_parameters(
-    portfolio_returns
-):
-    annual_return = (
-        portfolio_returns.mean()
-        * TRADING_DAYS
-    )
+def estimate_portfolio_parameters(portfolio_returns):
+    annual_return = (portfolio_returns.mean() * TRADING_DAYS)
 
-    annual_volatility = (
-        portfolio_returns.std()
-        * np.sqrt(TRADING_DAYS)
-    )
+    annual_volatility = (portfolio_returns.std() * np.sqrt(TRADING_DAYS))
 
     return annual_return, annual_volatility
 
@@ -94,41 +78,25 @@ def summarize_simulation(simulations):
         "percentile_95": float(final_values.quantile(0.95)),
     }
 
-def calculate_probability_of_loss(
-    simulations,
-    initial_value
-):
+def calculate_probability_of_loss(simulations, initial_value):
     final_values = simulations.iloc[-1]
 
-    losses = (
-        final_values < initial_value
-    )
+    losses = (final_values < initial_value)
 
     return float(losses.mean())
 
-def calculate_probability_of_loss(
-    simulations,
-    initial_value
-):
+def calculate_probability_of_loss(simulations, initial_value):
     final_values = simulations.iloc[-1]
 
-    losses = (
-        final_values < initial_value
-    )
+    losses = (final_values < initial_value)
 
     return losses.mean()
 
-def calculate_simulated_var(
-    simulations,
-    initial_value,
-    confidence_level=0.95
-):
+def calculate_simulated_var(simulations,initial_value,confidence_level=0.95):
     final_values = simulations.iloc[-1]
 
     percentile = 1 - confidence_level
 
-    cutoff = final_values.quantile(
-        percentile
-    )
+    cutoff = final_values.quantile(percentile)
 
     return float(initial_value - cutoff)

@@ -11,27 +11,15 @@ def get_benchmark_prices(benchmark="SPY", period="1y"):
     return get_closing_prices(benchmark, period=period)
 
 #Analyzes the performance of the benchmark
-def analyze_benchmark(
-    benchmark="SPY",
-    period="1y"
-):
-    prices = get_benchmark_prices(
-        benchmark,
-        period
-    )
+def analyze_benchmark(benchmark="SPY", period="1y"):
+    prices = get_benchmark_prices(benchmark, period)
 
     return analyze_performance(prices)
 
-def calculate_excess_return(
-    portfolio_return,
-    benchmark_return
-):
+def calculate_excess_return(portfolio_return, benchmark_return):
     return portfolio_return - benchmark_return
 
-def compare_performance(
-    portfolio_metrics,
-    benchmark_metrics
-):
+def compare_performance(portfolio_metrics, benchmark_metrics):
     return {
         "portfolio_return":
             portfolio_metrics["cumulative_return"],

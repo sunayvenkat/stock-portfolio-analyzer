@@ -13,10 +13,7 @@ def get_largest_position(portfolio_values):
     if not portfolio_values:
         raise ValueError("Portfolio cannot be empty.")
 
-    ticker = max(
-        portfolio_values,
-        key=lambda ticker: portfolio_values[ticker]["weight"]
-    )
+    ticker = max(portfolio_values, key=lambda ticker: portfolio_values[ticker]["weight"])
 
     return {
         "ticker": ticker,
@@ -24,10 +21,7 @@ def get_largest_position(portfolio_values):
     }
 
 #Finds the concentration ratio of the portfolio based on the largest position
-def calculate_concentration_ratio(
-    portfolio_values,
-    top_n=3
-):
+def calculate_concentration_ratio(portfolio_values, top_n=3):
     if top_n <= 0:
         raise ValueError("top_n must be greater than zero.")
 
@@ -68,37 +62,20 @@ def calculate_correlation_matrix(returns):
 
 #Creates a pairwise correlation matrix of the portfolio based on historical prices
 def calculate_average_correlation(returns):
-    correlation_matrix = (
-        calculate_correlation_matrix(returns)
-    )
+    correlation_matrix = (calculate_correlation_matrix(returns))
 
     if len(correlation_matrix.columns) < 2:
-        raise ValueError(
-            "At least two assets are required."
-        )
+        raise ValueError("At least two assets are required.")
 
-    mask = np.triu(
-        np.ones(
-            correlation_matrix.shape,
-            dtype=bool
-        ),
-        k=1
-    )
+    mask = np.triu(np.ones(correlation_matrix.shape, dtype=bool),k=1)
 
-    correlations = correlation_matrix.where(
-        mask
-    ).stack()
+    correlations = correlation_matrix.where(mask).stack()
 
     return correlations.mean()
 
 #Combine all the metrics
-def analyze_diversification(
-    portfolio_values,
-    returns
-):
-    largest_position = get_largest_position(
-        portfolio_values
-    )
+def analyze_diversification(portfolio_values,returns):
+    largest_position = get_largest_position(portfolio_values)
 
     return {
         "number_of_holdings":
