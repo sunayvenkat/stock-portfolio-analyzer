@@ -82,18 +82,16 @@ def estimate_portfolio_parameters(
 
     return annual_return, annual_volatility
 
-def summarize_simulation(
-    simulations
-):
+def summarize_simulation(simulations):
     final_values = simulations.iloc[-1]
 
     return {
-        "mean": final_values.mean(),
-        "median": final_values.median(),
-        "minimum": final_values.min(),
-        "maximum": final_values.max(),
-        "percentile_5": final_values.quantile(0.05),
-        "percentile_95": final_values.quantile(0.95),
+        "mean": float(final_values.mean()),
+        "median": float(final_values.median()),
+        "minimum": float(final_values.min()),
+        "maximum": float(final_values.max()),
+        "percentile_5": float(final_values.quantile(0.05)),
+        "percentile_95": float(final_values.quantile(0.95)),
     }
 
 def calculate_probability_of_loss(
@@ -106,7 +104,7 @@ def calculate_probability_of_loss(
         final_values < initial_value
     )
 
-    return losses.mean()
+    return float(losses.mean())
 
 def calculate_probability_of_loss(
     simulations,
@@ -121,10 +119,16 @@ def calculate_probability_of_loss(
     return losses.mean()
 
 def calculate_simulated_var(
-    final_values,
+    simulations,
     initial_value,
-    confidence_level=0.95,
+    confidence_level=0.95
 ):
-    percentile_value = final_values.quantile(1 - confidence_level)
+    final_values = simulations.iloc[-1]
 
-    return initial_value - percentile_value
+    percentile = 1 - confidence_level
+
+    cutoff = final_values.quantile(
+        percentile
+    )
+
+    return float(initial_value - cutoff)

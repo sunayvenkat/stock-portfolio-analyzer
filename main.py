@@ -207,3 +207,12 @@ print(
         "correlation_matrix"
     ].round(2)
 )
+
+
+from data.news_data import get_stock_news
+
+
+news = get_stock_news("AAPL")
+
+for article in news[:5]:
+    print(article)

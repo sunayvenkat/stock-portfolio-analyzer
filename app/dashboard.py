@@ -5,6 +5,15 @@ from analytics.monte_carlo import estimate_portfolio_parameters
 from models.portfolio import Portfolio
 import pandas as pd
 
+from data.news_data import (
+    get_normalized_stock_news,
+)
+
+from analytics.sentiment import (
+    analyze_news_sentiment,
+    summarize_sentiment,
+)
+
 from analytics.monte_carlo import (
     estimate_portfolio_parameters,
     run_monte_carlo,
@@ -131,37 +140,7 @@ if st.session_state.analyzed:
             for ticker, data in values.items()
         }
 
-        portfolio_returns = calculate_portfolio_returns(stock_returns,weights)
-
-        #Monte Carlo Simulation
-        expected_return, volatility = (estimate_portfolio_parameters(portfolio_returns))
-        initial_value = total_value
-
-        simulation_results = run_monte_carlo(
-            expected_return=expected_return,
-            volatility=volatility,
-            simulations=1000,
-            days=252,
-            initial_value=initial_value
-        )
-
-        simulation_summary = summarize_simulation(
-            simulation_results
-        )
-
-        probability_of_loss = (
-            calculate_probability_of_loss(
-                simulation_results,
-                initial_value
-            )
-        )
-
-
-        simulated_var = calculate_simulated_var(
-            simulation_results,
-            initial_value
-        )
-        
+        portfolio_returns = calculate_portfolio_returns(stock_returns,weights)      
 
         performance = analyze_portfolio_returns(portfolio_returns)
 
@@ -450,6 +429,35 @@ if st.session_state.analyzed:
 
         st.bar_chart(chart_data)
 
+        #Monte Carlo Simulation
+        expected_return, volatility = (estimate_portfolio_parameters(portfolio_returns))
+        initial_value = total_value
+
+        simulation_results = run_monte_carlo(
+            expected_return=expected_return,
+            volatility=volatility,
+            simulations=1000,
+            days=252,
+            initial_value=initial_value
+        )
+
+        simulation_summary = summarize_simulation(
+            simulation_results
+        )
+
+        probability_of_loss = (
+            calculate_probability_of_loss(
+                simulation_results,
+                initial_value
+            )
+        )
+
+
+        simulated_var = calculate_simulated_var(
+            simulation_results,
+            initial_value
+        )
+
 
         #Monte Carlo parameters
         simulation_count = st.slider(
@@ -549,6 +557,67 @@ if st.session_state.analyzed:
             )
     
             position = values[selected_ticker]
+
+            articles = get_normalized_stock_news(
+                selected_ticker
+            )
+
+            analyzed_articles = analyze_news_sentiment(
+                articles[:10]
+            )
+
+            sentiment_summary = summarize_sentiment(
+                analyzed_articles
+            )
+
+            st.write("### News Sentiment")
+
+            n1, n2 = st.columns(2)
+
+            n1.metric(
+                "Overall Sentiment",
+                sentiment_summary[
+                    "overall_sentiment"
+                ]
+            )
+
+            n2.metric(
+                "Average Score",
+                f"{sentiment_summary['average_score']:.2f}"
+            )
+
+            st.write(
+            f"### Recent {selected_ticker} News"
+            )
+
+            if not analyzed_articles:
+                st.info(
+                    "No recent news found."
+                )
+
+            for article in analyzed_articles:
+                st.write(
+                    f"**{article['title']}**"
+                )
+
+                st.write(
+                    f"{article['publisher']} — "
+                    f"{article['sentiment_label']} "
+                    f"({article['sentiment_score']:.2f})"
+                )
+
+                if article["summary"]:
+                    st.write(
+                        article["summary"]
+                    )
+
+                if article["url"]:
+                    st.link_button(
+                        "Read Article",
+                        article["url"]
+                    )
+
+                st.divider()
     
             st.write("### Position Details")
     
