@@ -323,16 +323,9 @@ if st.session_state.analyzed:
         )
 
         #Cumulative returns
-        stock_cumulative_returns = (
-            calculate_stock_cumulative_returns(
-                historical_prices
-            )
-        )
+        stock_cumulative_returns = (calculate_stock_cumulative_returns(historical_prices))
 
-        attribution = build_attribution_table(
-            values,
-            stock_cumulative_returns
-        )
+        attribution = build_attribution_table(values, stock_cumulative_returns)
 
         st.subheader(
             "Portfolio Optimization"
@@ -383,28 +376,15 @@ if st.session_state.analyzed:
             ]
         })
 
-        st.dataframe(
-            max_sharpe_df,
-            use_container_width=True
-        )
+        st.dataframe(max_sharpe_df, use_container_width=True)
 
-        min_vol_chart = (
-            min_vol_df
-            .set_index("Ticker")["Weight"]
-        )
+        min_vol_chart = (min_vol_df.set_index("Ticker")["Weight"])
 
-        st.bar_chart(
-            min_vol_chart
-        )
+        st.bar_chart(min_vol_chart)
 
-        max_sharpe_chart = (
-            max_sharpe_df
-            .set_index("Ticker")["Weight"]
-        )
+        max_sharpe_chart = (max_sharpe_df.set_index("Ticker")["Weight"])
 
-        st.bar_chart(
-            max_sharpe_chart
-        )
+        st.bar_chart(max_sharpe_chart)
 
         attribution_df = pd.DataFrame(attribution)
 
@@ -433,10 +413,7 @@ if st.session_state.analyzed:
         )
 
         #Contributions chart
-        chart_data = (
-            attribution_df
-            .set_index("Ticker")["Contribution"]
-        )
+        chart_data = (attribution_df.set_index("Ticker")["Contribution"])
 
         st.bar_chart(chart_data)
 
@@ -452,22 +429,12 @@ if st.session_state.analyzed:
             initial_value=initial_value
         )
 
-        simulation_summary = summarize_simulation(
-            simulation_results
-        )
+        simulation_summary = summarize_simulation(simulation_results)
 
-        probability_of_loss = (
-            calculate_probability_of_loss(
-                simulation_results,
-                initial_value
-            )
-        )
+        probability_of_loss = (calculate_probability_of_loss(simulation_results, initial_value))
 
 
-        simulated_var = calculate_simulated_var(
-            simulation_results,
-            initial_value
-        )
+        simulated_var = calculate_simulated_var(simulation_results,initial_value)
 
 
         #Monte Carlo parameters
@@ -486,9 +453,7 @@ if st.session_state.analyzed:
             value=1
         )
 
-        simulation_days = (
-            simulation_years * 252
-        )
+        simulation_days = (simulation_years * 252)
 
         simulation_results = run_monte_carlo(
             expected_return=expected_return,
@@ -515,23 +480,15 @@ if st.session_state.analyzed:
             #Cache calls to network
             @st.cache_data(ttl=300)
             def load_prices(tickers, period):
-                return get_multiple_closing_prices(
-                    tickers,
-                    period=period
-                )
+                return get_multiple_closing_prices(tickers,period=period)
 
             @st.cache_data(ttl=300)
             def load_news(ticker):
                 return get_normalized_stock_news(ticker)
 
-            all_prices = load_prices(
-                tickers + ["SPY"],
-                "1y"
-            )
+            all_prices = load_prices(tickers + ["SPY"], "1y")
 
-            articles = load_news(
-                selected_ticker
-            )
+            articles = load_news(selected_ticker)
     
             s1, s2, s3, s4 = st.columns(4)
     
@@ -574,9 +531,7 @@ if st.session_state.analyzed:
                 f"{selected_ticker} Growth of $1"
             )
     
-            st.line_chart(
-                normalized_prices
-            )
+            st.line_chart(normalized_prices)
     
             stock_drawdown = calculate_drawdown(selected_prices)
     
@@ -590,17 +545,11 @@ if st.session_state.analyzed:
     
             position = values[selected_ticker]
 
-            articles = get_normalized_stock_news(
-                selected_ticker
-            )
+            articles = get_normalized_stock_news(selected_ticker)
 
-            analyzed_articles = analyze_news_sentiment(
-                articles[:10]
-            )
+            analyzed_articles = analyze_news_sentiment(articles[:10])
 
-            sentiment_summary = summarize_sentiment(
-                analyzed_articles
-            )
+            sentiment_summary = summarize_sentiment(analyzed_articles)
 
             st.write("### News Sentiment")
 
@@ -623,14 +572,10 @@ if st.session_state.analyzed:
             )
 
             if not analyzed_articles:
-                st.info(
-                    "No recent news found."
-                )
+                st.info("No recent news found.")
 
             for article in analyzed_articles:
-                st.write(
-                    f"**{article['title']}**"
-                )
+                st.write(f"**{article['title']}**")
 
                 st.write(
                     f"{article['publisher']} — "
@@ -639,9 +584,7 @@ if st.session_state.analyzed:
                 )
 
                 if article["summary"]:
-                    st.write(
-                        article["summary"]
-                    )
+                    st.write(article["summary"])
 
                 if article["url"]:
                     st.link_button(
@@ -695,14 +638,10 @@ if st.session_state.analyzed:
                 f"{selected_ticker} Daily Returns"
             )
     
-            st.line_chart(
-                selected_returns
-            )
+            st.line_chart(selected_returns)
 
             #Display Monte Carlo stuff
-            st.subheader(
-                "Monte Carlo Simulation"
-            )
+            st.subheader("Monte Carlo Simulation")
 
             m1, m2, m3, m4 = st.columns(4)
 

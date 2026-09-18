@@ -51,9 +51,7 @@ def analyze_news_sentiment(articles):
     ]
 
 #Calculates an average sentiment score
-def calculate_average_sentiment(
-    analyzed_articles
-):
+def calculate_average_sentiment(analyzed_articles):
     if not analyzed_articles:
         return 0.0
 
@@ -64,12 +62,8 @@ def calculate_average_sentiment(
 
     return sum(scores) / len(scores)
 
-def summarize_sentiment(
-    analyzed_articles
-):
-    average_score = calculate_average_sentiment(
-        analyzed_articles
-    )
+def summarize_sentiment(analyzed_articles):
+    average_score = calculate_average_sentiment(analyzed_articles)
 
     return {
         "average_score": average_score,

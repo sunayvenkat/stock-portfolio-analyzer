@@ -25,25 +25,13 @@ def get_portfolio_values(portfolio):
         purchase_price = position["purchase_price"]
         current_price = get_current_price(ticker)
 
-        position_value = calculate_position_value(
-            shares,
-            current_price
-        )
+        position_value = calculate_position_value(shares, current_price)
 
-        cost_basis = calculate_cost_basis(
-            shares, 
-            purchase_price
-        )
+        cost_basis = calculate_cost_basis(shares, purchase_price)
 
-        gain_loss = calculate_gain_loss(
-            position_value,
-            cost_basis
-        )
+        gain_loss = calculate_gain_loss(position_value, cost_basis)
 
-        return_percentage = calculate_return_percentage(
-            position_value,
-            cost_basis
-        )
+        return_percentage = calculate_return_percentage(position_value, cost_basis)
 
         values[ticker] = {
             "shares": shares,
@@ -89,9 +77,7 @@ def calculate_position_weights(portfolio_values):
         raise ValueError("Portfolio value cannot be zero.")
 
     for position in portfolio_values.values():
-        position["weight"] = (
-            position["current_value"] / total_value
-        ) * 100
+        position["weight"] = (position["current_value"] / total_value) * 100
 
     return portfolio_values
 
@@ -112,8 +98,5 @@ def calculate_portfolio_return(portfolio_values):
     current_value = calculate_portfolio_value(portfolio_values)
     cost_basis = calculate_total_cost_basis(portfolio_values)
 
-    return calculate_return_percentage(
-        current_value,
-        cost_basis
-    )
+    return calculate_return_percentage(current_value, cost_basis)
 

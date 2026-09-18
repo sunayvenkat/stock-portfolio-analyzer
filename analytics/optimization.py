@@ -25,9 +25,7 @@ def calculate_portfolio_volatility(weights,covariance_matrix):
 def find_minimum_volatility_portfolio(expected_returns, covariance_matrix):
     num_assets = len(expected_returns)
 
-    initial_weights = np.array(
-        [1 / num_assets] * num_assets
-    )
+    initial_weights = np.array([1 / num_assets] * num_assets)
 
     bounds = tuple(
         (0, 1)
@@ -50,9 +48,7 @@ def find_minimum_volatility_portfolio(expected_returns, covariance_matrix):
     )
 
     if not result.success:
-        raise ValueError(
-            "Portfolio optimization failed."
-        )
+        raise ValueError("Portfolio optimization failed.")
 
     return result.x
 
@@ -62,40 +58,21 @@ def negative_sharpe_ratio(
     covariance_matrix,
     risk_free_rate=0.0
 ):
-    portfolio_return = (
-        calculate_expected_portfolio_return(
-            weights,
-            expected_returns
-        )
-    )
+    portfolio_return = (calculate_expected_portfolio_return(weights, expected_returns))
 
-    portfolio_volatility = (
-        calculate_portfolio_volatility(
-            weights,
-            covariance_matrix
-        )
-    )
+    portfolio_volatility = (calculate_portfolio_volatility(weights, covariance_matrix))
 
     if portfolio_volatility == 0:
         return np.inf
 
-    sharpe = (
-        portfolio_return
-        - risk_free_rate
-    ) / portfolio_volatility
+    sharpe = (portfolio_return - risk_free_rate) / portfolio_volatility
 
     return -sharpe
 
-def find_maximum_sharpe_portfolio(
-    expected_returns,
-    covariance_matrix,
-    risk_free_rate=0.0
-):
+def find_maximum_sharpe_portfolio(expected_returns, covariance_matrix, risk_free_rate=0.0):
     num_assets = len(expected_returns)
 
-    initial_weights = np.array(
-        [1 / num_assets] * num_assets
-    )
+    initial_weights = np.array([1 / num_assets] * num_assets)
 
     bounds = tuple(
         (0, 1)
@@ -122,46 +99,20 @@ def find_maximum_sharpe_portfolio(
     )
 
     if not result.success:
-        raise ValueError(
-            "Portfolio optimization failed."
-        )
+        raise ValueError("Portfolio optimization failed.")
 
     return result.x
 
-def optimize_portfolio(
-    returns,
-    risk_free_rate=0.0
-):
-    expected_returns = (
-        calculate_expected_returns(
-            returns
-        )
-    )
+def optimize_portfolio(returns, risk_free_rate=0.0):
+    expected_returns = (calculate_expected_returns(returns))
 
-    covariance_matrix = (
-        calculate_covariance_matrix(
-            returns
-        )
-    )
+    covariance_matrix = (calculate_covariance_matrix(returns))
 
-    min_vol_weights = (
-        find_minimum_volatility_portfolio(
-            expected_returns,
-            covariance_matrix
-        )
-    )
+    min_vol_weights = (find_minimum_volatility_portfolio(expected_returns,covariance_matrix))
 
-    max_sharpe_weights = (
-        find_maximum_sharpe_portfolio(
-            expected_returns,
-            covariance_matrix,
-            risk_free_rate
-        )
-    )
+    max_sharpe_weights = (find_maximum_sharpe_portfolio(expected_returns,covariance_matrix,risk_free_rate))
 
-    tickers = list(
-        returns.columns
-    )
+    tickers = list(returns.columns)
 
     return {
         "minimum_volatility": {
