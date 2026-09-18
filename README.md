@@ -1,4 +1,5 @@
 # stock-portfolio-analyzer
+Link: https://stock-portfolio-analyzer-spk.streamlit.app/
 
 Stock Portfolio Analyzer is an interactive Python application for evaluating investment portfolios using real-time and historical market data. Built with Streamlit, the platform combines portfolio valuation, performance analysis, risk metrics, diversification analysis, benchmark comparison, optimization, Monte Carlo simulation, and financial news sentiment into a single dashboard.
 
