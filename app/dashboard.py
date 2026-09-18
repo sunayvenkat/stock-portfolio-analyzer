@@ -64,7 +64,6 @@ from analytics.diversification import (
     analyze_diversification,
 )
 
-
 #Creates a Streamlit app for analyzing stock portfolios
 st.set_page_config(
     page_title="Portfolio Analyzer",
@@ -500,6 +499,27 @@ if st.session_state.analyzed:
             selected_prices = historical_prices[selected_ticker]
     
             stock_metrics = analyze_performance(selected_prices)
+
+            #Cache calls to network
+            @st.cache_data(ttl=300)
+            def load_prices(tickers, period):
+                return get_multiple_closing_prices(
+                    tickers,
+                    period=period
+                )
+
+            @st.cache_data(ttl=300)
+            def load_news(ticker):
+                return get_normalized_stock_news(ticker)
+
+            all_prices = load_prices(
+                tickers + ["SPY"],
+                "1y"
+            )
+
+            articles = load_news(
+                selected_ticker
+            )
     
             s1, s2, s3, s4 = st.columns(4)
     
@@ -729,9 +749,19 @@ if st.session_state.analyzed:
             )
 
 
+    except ValueError as error:
+        st.error(str(error))
 
+    except TypeError as error:
+        st.error(
+            f"Invalid input: {error}"
+        )
 
-        
+    except Exception as error:
+        st.error(
+            "An unexpected error occurred."
+        )
+
     except Exception as error:
         st.error(
             f"Unable to analyze portfolio: {error}"

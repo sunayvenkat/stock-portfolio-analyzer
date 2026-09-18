@@ -1,6 +1,7 @@
 
 
 import yfinance as yf
+from utils.logger import logger
 
 #Returns news on a given stock ticker
 def get_stock_news(ticker):
@@ -12,12 +13,28 @@ def get_stock_news(ticker):
     if not ticker:
         raise ValueError("Ticker symbol cannot be empty.")
 
+    logger.info(
+        "Fetching news for %s",
+        ticker
+    )
+
     stock = yf.Ticker(ticker)
 
     news = stock.news
 
     if not news:
+        logger.warning(
+            "No news found for %s",
+            ticker
+        )
+
         return []
+
+    logger.info(
+        "Fetched %d news articles for %s",
+        len(news),
+        ticker
+    )
 
     return news
 
