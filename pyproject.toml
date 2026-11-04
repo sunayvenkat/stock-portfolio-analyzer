@@ -1,0 +1,12 @@
+# Dependencies for the web dashboard on Vercel. Streamlit Community Cloud reads requirements.txt first, so the Streamlit app is unaffected.
+[project]
+name = "stock-portfolio-analyzer"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy==2.5.3",
+    "pandas==3.0.5",
+    "scipy==1.18.1",
+    "yfinance==1.7.0",
+    "vaderSentiment==3.3.2",
+]

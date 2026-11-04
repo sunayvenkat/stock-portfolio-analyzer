@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": "web/static",
+  "functions": {
+    "api/*.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{tests/**,app/**,web/static/**,graphify-out/**,.devcontainer/**,.taste-skill/**,main.py}"
+    }
+  }
+}

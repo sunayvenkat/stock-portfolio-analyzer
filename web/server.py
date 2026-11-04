@@ -28,6 +28,9 @@ from utils.logger import logger
 STATIC_DIR = os.path.join(ROOT_DIR, "web", "static")
 MAX_BODY_BYTES = 64 * 1024
 
+#The data layer logs every ticker it fetches at INFO; a public server keeps visitors' holdings out of its logs
+logger.setLevel(logging.WARNING)
+
 
 #Converts numpy values and NaN into plain JSON (browsers reject a bare NaN)
 def to_json_safe(value):
@@ -117,9 +120,6 @@ if __name__ == "__main__":
 
     server = ThreadingHTTPServer((host, port), DashboardHandler)
 
-    logger.info("Portfolio Analyzer running at http://%s:%d", host, port)
-
-    #The data layer logs every ticker it fetches at INFO; a public server keeps visitors' holdings out of its logs
-    logger.setLevel(logging.WARNING)
+    print(f"Portfolio Analyzer running at http://{host}:{port}", flush=True)
 
     server.serve_forever()
