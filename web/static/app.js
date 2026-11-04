@@ -77,6 +77,7 @@
   const kpis = (cells) => `<div class="kpis s12">${cells.join('')}</div>`;
   const panel = (cls, h2, body, meta = '', id = '') => `<section class="panel ${cls}"${id ? ` id="${id}"` : ''}><header><h2>${h2}</h2>${meta}</header>${body}</section>`;
   const toned = (v, text) => `<span class="${tone(v)}">${text}</span>`;
+  const explain = (html) => `<p class="explain">${html}</p>`;
   const empty = (msg, action = '') => `<section class="panel s12"><div class="empty"><div class="notice" style="justify-items:center">${msg}${action}</div></div></section>`;
 
   // ---------- views ----------
@@ -134,7 +135,7 @@
         kpi('Sharpe ratio', dec(c.portfolio_sharpe), `S&amp;P 500 ${dec(c.benchmark_sharpe)}`),
         kpi('Max drawdown', pct(c.portfolio_max_drawdown), `S&amp;P 500 ${pct(c.benchmark_max_drawdown)}`),
       ]),
-      panel('s7', 'Drawdown from the running peak', '<div class="chart" id="dd-chart"></div>', '<div id="dd-legend"></div>'),
+      panel('s7', 'Drawdown from the running peak', `<div class="chart" id="dd-chart"></div>${explain('How far the portfolio sits below its highest value so far; 0% means a new high. It shows the worst drop you would have sat through and how long recovery took, a side of risk that volatility alone hides.')}`, '<div id="dd-legend"></div>'),
       panel('s5', 'Return attribution', `<div class="rows">${attr.map((r) => {
         const w = (Math.abs(r.Contribution) / span) * 50;
         return `<div class="contrib"><span>${esc(r.Ticker)}<span class="sub">${pct(r.Weight / 100)} weight</span></span>
@@ -170,9 +171,10 @@
       panel('s7', 'Correlation of daily returns', `<div class="table-wrap"><table class="matrix">
         <thead><tr><th></th>${m.tickers.map((t) => `<th scope="col">${esc(t)}</th>`).join('')}</tr></thead>
         <tbody>${m.tickers.map((t, i) => `<tr><th scope="row">${esc(t)}</th>${m.values[i].map((r, j) => cell(r, i === j)).join('')}</tr>`).join('')}</tbody>
-      </table></div>`, '<span class="meta">1 moves together, 0 unrelated</span>'),
+      </table></div>${explain('How closely two stocks rise and fall on the same days, from −1 (opposite) through 0 (unrelated) to 1 (in step). Holdings with low correlation cushion each other, which keeps the portfolio’s swings smaller.')}`, '<span class="meta">1 moves together, 0 unrelated</span>'),
       panel('s5', 'Most correlated pairs', `<dl class="facts" style="margin-top:0">${shown.map((p) => `<div><dt>${esc(p.a)} and ${esc(p.b)}</dt><dd>${dec(p.r)}</dd></div>`).join('')}</dl>
-        <p class="meta" style="margin-top:14px">${close ? `${close} of ${pairs.length} pair${pairs.length === 1 ? '' : 's'} move closely together (above 0.70), so they add little diversification.` : 'No pair moves closely together (above 0.70).'}</p>`,
+        <p class="meta" style="margin-top:14px">${close ? `${close} of ${pairs.length} pair${pairs.length === 1 ? '' : 's'} move closely together (above 0.70), so they add little diversification.` : 'No pair moves closely together (above 0.70).'}</p>
+        ${explain('The pairs whose daily returns move most in step. A highly correlated pair behaves like one bigger position, so a fall in one usually drags the other down with it.')}`,
         `<span class="meta">${shown.length} of ${pairs.length} pair${pairs.length === 1 ? '' : 's'}</span>`),
     ].join('');
   }
@@ -194,7 +196,8 @@
       panel('s5', 'Allocations compared', `<div class="table-wrap"><table>
         <thead><tr><th>Allocation</th><th class="n">Return</th><th class="n">Volatility</th><th class="n">Sharpe</th></tr></thead>
         <tbody>${['current', 'minimum_volatility', 'maximum_sharpe'].map((k) => `<tr aria-selected="${k === state.target}"><td>${names[k]}</td><td class="n">${pct(o[k].expected_return)}</td><td class="n">${pct(o[k].volatility)}</td><td class="n">${dec(o[k].sharpe_ratio)}</td></tr>`).join('')}</tbody>
-      </table></div><p class="meta" style="margin-top:14px">Annualized from the past year of daily returns. Long only, fully invested, 0% risk-free rate. A backward look, not a forecast.</p>`),
+      </table></div><p class="meta" style="margin-top:14px">Annualized from the past year of daily returns. Long only, fully invested, 0% risk-free rate. A backward look, not a forecast.</p>
+      ${explain('<strong>Maximum Sharpe</strong> is the mix that earned the most return for each unit of risk. <strong>Minimum volatility</strong> is the mix with the smallest swings, whatever its return. Comparing them with your current weights shows whether rebalancing would have bought more return for the same risk, or a smoother ride.')}`),
     ].join('');
     Charts.bullet(document.getElementById('bullets'), tickers.map((t) => ({ label: t, value: cur.weights[t], target: pick.weights[t] })), { format: (v) => pct(v), max: 1 });
     // drift here is the point of the comparison, not an alarm, so it stays grey
@@ -286,8 +289,8 @@
         <div><dt>Below the high</dt><dd>${pct(dd.at(-1))}</dd></div>
         <div><dt>Past-year low</dt><dd>${money(Math.min(...s.prices.values))}</dd></div>
       </dl>`),
-      panel('s5', 'Drawdown from the running peak', '<div class="chart" id="stock-dd"></div>'),
-      panel('s7', 'Recent news', '<div id="news-body"><div class="skeleton line"></div><div class="skeleton line"></div><div class="skeleton line" style="width:70%"></div></div>', '<span class="meta" id="news-meta">Scored with VADER sentiment</span>', 'news'),
+      panel('s12', 'Drawdown from the running peak', `<div class="chart" id="stock-dd"></div>${explain(`How far ${esc(h.ticker)} closed below its highest price so far this year. Deep or long drawdowns mean this holding has been pulling the portfolio down and was a bumpy one to hold.`)}`),
+      panel('s12', 'News sentiment', '<div id="news-body"><div class="skeleton line"></div><div class="skeleton line"></div><div class="skeleton line" style="width:70%"></div></div>', '<span class="meta" id="news-meta">Scored with VADER sentiment</span>', 'news'),
     ].join('');
     Charts.line(document.getElementById('price-chart'), {
       labels: s.prices.dates.map((x) => day(x)), series: [{ name: h.ticker, values: s.prices.values }],
@@ -314,8 +317,14 @@
     if (n.error) { body.innerHTML = `<div class="empty">News for ${esc(ticker)} is unavailable right now. Prices and analysis above are unaffected.</div>`; return; }
     if (!n.articles.length) { body.innerHTML = `<div class="empty">No recent articles found for ${esc(ticker)}.</div>`; return; }
     const pill = (label) => `<span class="pill ${label === 'Positive' ? 'pos' : label === 'Negative' ? 'neg' : ''}">${esc(label)}</span>`;
-    document.getElementById('news-meta').innerHTML = `${pill(n.summary.overall_sentiment)} <span style="margin-left:6px">Average ${dec(n.summary.average_score)} across ${n.summary.article_count}</span>`;
-    body.innerHTML = `<ul class="news">${n.articles.map((a) => `<li>
+    const avg = n.summary.average_score, mood = n.summary.overall_sentiment;
+    const counts = ['Positive', 'Neutral', 'Negative'].map((l) => `${n.articles.filter((a) => a.sentiment_label === l).length} ${l.toLowerCase()}`).join(' · ');
+    body.innerHTML = `<div class="sentiment">
+        <div><div class="kpi-label">Average sentiment</div><div class="sentiment-score num ${mood === 'Positive' ? 'up' : mood === 'Negative' ? 'down' : ''}">${plus(avg)}${dec(avg)}</div></div>
+        <div class="sentiment-side">${pill(mood)}<span class="meta">${counts} across ${n.summary.article_count} headlines</span></div>
+      </div>
+      ${explain('Each headline is scored from −1 (very negative) to +1 (very positive) with VADER; ±0.05 or beyond counts as positive or negative. The average is a quick read of the news mood around the stock, not a price forecast.')}
+      <ul class="news">${n.articles.map((a) => `<li>
       ${a.url ? `<a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">${esc(a.title)}</a>` : `<span>${esc(a.title)}</span>`}
       ${pill(a.sentiment_label)}
       <span class="meta">${esc(a.publisher)} · score ${dec(a.sentiment_score)}</span></li>`).join('')}</ul>`;

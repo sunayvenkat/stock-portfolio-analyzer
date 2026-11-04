@@ -348,3 +348,11 @@ input[type="range"] { width: 180px; accent-color: var(--primary); }
 }
 @media (min-width: 861px) { .sidebar .close { display: none; } }
 .controls .meta { color: var(--faint); font-size: var(--fs-small); }
+.explain { margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: var(--raised); color: var(--muted); font-size: var(--fs-small); line-height: 1.55; }
+.explain strong { color: var(--text); font-weight: 500; }
+.sentiment { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.sentiment-score { margin-top: 4px; font-size: 44px; line-height: 1; font-weight: 420; letter-spacing: -0.02em; }
+.sentiment-side { display: grid; justify-items: end; gap: 8px; }
+.sentiment .pill { height: 28px; padding: 0 12px; font-size: var(--fs-body); }
+.sentiment + .explain { margin-bottom: 8px; }
+@media (max-width: 480px) { .sentiment-side { justify-items: start; } }
