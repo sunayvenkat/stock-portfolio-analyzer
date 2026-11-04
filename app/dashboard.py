@@ -487,8 +487,6 @@ if st.session_state.analyzed:
                 return get_normalized_stock_news(ticker)
 
             all_prices = load_prices(tickers + ["SPY"], "1y")
-
-            articles = load_news(selected_ticker)
     
             s1, s2, s3, s4 = st.columns(4)
     
@@ -545,7 +543,12 @@ if st.session_state.analyzed:
     
             position = values[selected_ticker]
 
-            articles = get_normalized_stock_news(selected_ticker)
+            #A news outage should not hide the rest of the analysis
+            try:
+                articles = load_news(selected_ticker)
+            except Exception:
+                articles = []
+                st.warning("News is unavailable right now.")
 
             analyzed_articles = analyze_news_sentiment(articles[:10])
 

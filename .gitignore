@@ -11,3 +11,4 @@ tests/__pycache__/
 .streamlit/
 .env
 graphify-out/
+.taste-skill/

@@ -5,13 +5,16 @@ def calculate_position_value(shares, current_price):
     return shares * current_price
 
 #Returns a dictionary containing the current value of each position in the portfolio
-def get_portfolio_values(portfolio):
+#get_price lets a caller supply prices it already fetched; it defaults to a live lookup per ticker
+def get_portfolio_values(portfolio, get_price=None):
+    get_price = get_price or get_current_price
+
     values = {}
 
     for ticker, position in portfolio.positions.items():
         shares = position["shares"]
         purchase_price = position["purchase_price"]
-        current_price = get_current_price(ticker)
+        current_price = get_price(ticker)
 
         position_value = calculate_position_value(shares, current_price)
 

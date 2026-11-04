@@ -9,6 +9,15 @@ For deeper risk analysis, the project includes Monte Carlo simulations that mode
 
 The project was designed with a modular architecture separating data collection, portfolio models, analytics, and the user interface. Automated testing with pytest helps validate the financial calculations and maintain reliability as new features are added.
 
+Web App (no Streamlit)
+    web/ holds a standalone version of the dashboard: a small server built on the Python standard library (web/server.py) that runs the same analytics, and a plain HTML, CSS and JavaScript front end (web/static/) with no framework or CDN dependencies.
+
+    Run it from the project root:
+        python web/server.py
+    then open http://127.0.0.1:8000.
+
+    To host it so it stays up, run the same command on any machine or service that runs Python (a VPS, Render, Railway, Fly.io, a home server) with HOST=0.0.0.0 and PORT set to the port the host expects. It still needs internet access, because prices and news come from Yahoo Finance.
+
 Key Features
     Multi-stock portfolio input and live valuation
     Cost basis, gain/loss, and portfolio weight analysis
