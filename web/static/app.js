@@ -391,7 +391,8 @@
   const VIEWS = { overview, performance, diversification, optimization, simulation, holding, edit };
   function route() {
     const [name, arg] = location.hash.replace(/^#\/?/, '').split('/');
-    return { name: VIEWS[name] ? name : 'overview', arg: arg ? decodeURIComponent(arg) : null };
+    // the holdings editor is the landing page, so a first visit starts where the portfolio is set up
+    return { name: VIEWS[name] ? name : 'edit', arg: arg ? decodeURIComponent(arg) : null };
   }
 
   function render() {
