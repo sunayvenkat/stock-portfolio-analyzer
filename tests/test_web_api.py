@@ -126,3 +126,15 @@ def test_simulate_rejects_runs_over_the_budget(simulations, years):
 
 def test_to_json_safe_replaces_nan():
     assert to_json_safe({"a": np.float64("nan"), "b": [np.int64(3)]}) == {"a": None, "b": [3]}
+
+
+def test_normalize_news_reads_feed_and_search_items():
+    from data.news_data import normalize_news
+
+    feed = {"content": {"title": "A", "summary": "s", "provider": {"displayName": "P"}, "canonicalUrl": {"url": "u"}}}
+    search = {"title": "B", "publisher": "Q", "link": "l"}
+
+    assert normalize_news([feed, search]) == [
+        {"title": "A", "summary": "s", "publisher": "P", "url": "u"},
+        {"title": "B", "summary": "", "publisher": "Q", "url": "l"},
+    ]
